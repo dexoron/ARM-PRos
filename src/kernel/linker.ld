@@ -1,8 +1,9 @@
 ENTRY(_start)
 
+/* Raspberry Pi 3 (AArch64): firmware loads kernel8.img at 0x80000 */
 SECTIONS
 {
-    . = 0x40000000;
+    . = 0x80000;
 
     .text : {
         *(.text)
@@ -12,11 +13,14 @@ SECTIONS
         *(.data)
     }
 
-    .bss : {
+    .bss : ALIGN(8) {
+        __bss_start = .;
         *(.bss)
+        . = ALIGN(8);
+        __bss_end = .;
     }
 
-    . = ALIGN(8);
+    . = ALIGN(16);
     . = . + 0x4000; /* 16 KB stack */
     stack_top = .;
 }

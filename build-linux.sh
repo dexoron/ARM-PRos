@@ -65,7 +65,19 @@ print_info "Compiling Drivers..."
 ${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/drivers/uart.c" -o "$BIN_DIR/uart.o"
 check_error "Failed to compile uart.c"
 
+${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/drivers/mailbox.c" -o "$BIN_DIR/mailbox.o"
+check_error "Failed to compile mailbox.c"
+
+${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/drivers/framebuffer.c" -o "$BIN_DIR/framebuffer.o"
+check_error "Failed to compile framebuffer.c"
+
+${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/drivers/console.c" -o "$BIN_DIR/console.o"
+check_error "Failed to compile console.c"
+
 print_info "Compiling libc..."
+${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/lib/font8x8_basic.c" -o "$BIN_DIR/font8x8_basic.o"
+check_error "Failed to compile font8x8_basic.c"
+
 ${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/lib/string.c" -o "$BIN_DIR/string.o"
 check_error "Failed to compile string.c"
 
@@ -77,6 +89,9 @@ ${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/kernel/kshell.c" -o "$BIN_DIR/kshell.o"
 check_error "Failed to compile kshell.c"
 
 print_info "Compiling Kernel..."
+${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/kernel/log.c" -o "$BIN_DIR/log.o"
+check_error "Failed to compile log.c"
+
 ${CROSS_COMPILE}gcc $CFLAGS -c "$SRC_DIR/kernel/kernel.c" -o "$BIN_DIR/kernel_c.o"
 check_error "Failed to compile kernel.c"
 
@@ -85,13 +100,30 @@ ${CROSS_COMPILE}gcc -c "$SRC_DIR/arch/boot.S" -o "$BIN_DIR/boot.o"
 check_error "Failed to assemble boot.S"
 
 print_info "Linking..."
-${CROSS_COMPILE}ld -T "$SRC_DIR/kernel/linker.ld" "$BIN_DIR/boot.o" "$BIN_DIR/kernel_c.o" "$BIN_DIR/uart.o" "$BIN_DIR/string.o" "$BIN_DIR/stdlib.o" "$BIN_DIR/kshell.o" -o "$OUTPUT"
+${CROSS_COMPILE}ld -T "$SRC_DIR/kernel/linker.ld" \
+    "$BIN_DIR/boot.o" \
+    "$BIN_DIR/kernel_c.o" \
+    "$BIN_DIR/log.o" \
+    "$BIN_DIR/kshell.o" \
+    "$BIN_DIR/console.o" \
+    "$BIN_DIR/framebuffer.o" \
+    "$BIN_DIR/mailbox.o" \
+    "$BIN_DIR/uart.o" \
+    "$BIN_DIR/font8x8_basic.o" \
+    "$BIN_DIR/string.o" \
+    "$BIN_DIR/stdlib.o" \
+    -o "$OUTPUT"
 check_error "Failed to link"
 
 if [ -f "$OUTPUT" ]; then
+    print_info "Creating kernel8.img (raw image for Raspberry Pi 3)..."
+    ${CROSS_COMPILE}objcopy -O binary "$OUTPUT" "${BUILD_DIR}/kernel8.img"
+    check_error "Failed to create kernel8.img"
+
     size_bytes=$(stat -c%s "$OUTPUT" 2>/dev/null || echo "0")
     print_ok "Kernel compiled successfully: ${size_bytes} bytes"
     print_ok "Output: $OUTPUT"
+    print_ok "Pi 3 SD boot: copy ${BUILD_DIR}/kernel8.img to boot partition as kernel8.img"
 else
     print_failed "Kernel ELF not created"
 fi

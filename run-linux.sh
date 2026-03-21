@@ -18,11 +18,9 @@ print_msg() {
 print_msg "$NC" ""
 print_msg "$GREEN" "Starting ARM emulator..."
 
+# Raspberry Pi 3
 qemu-system-aarch64 \
-    -M virt \
-    -cpu cortex-a53 \
-    -m 1024 \
+    -M raspi3b \
     -kernel build/KERNEL.ELF \
-    -display gtk \
-    -serial vc \
-    -monitor stdio
+    -serial stdio \
+    -display gtk
