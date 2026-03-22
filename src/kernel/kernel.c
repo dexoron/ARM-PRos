@@ -1,9 +1,12 @@
+#include <drivers/console.h>
+#include <drivers/framebuffer.h>
 #include <drivers/uart.h>
+#include <kshell.h>
+#include <log.h>
 #include <string.h>
 #include <stdlib.h>
-#include <kshell.h>
 
-const char *header = "================================ ARM-PRos v0.1 ================================\n\r";
+const char *header = "=============================== ARM-PRos v0.1 ==============================\n\r";
 
 const char *pros_logo = 
     "  _____  _____   ____   _____ \n\r"
@@ -17,11 +20,26 @@ const char *copyright = "* Copyright (C) 2026 PRoX2011\n\r";
 const char *shell = "* Shell: ARM-PRos kernel shell\n\r";
 
 void main() {
-    uart_puts(header);
-    uart_puts(pros_logo);
-    uart_puts("\n\r");
-    uart_puts(copyright);
-    uart_puts(shell);
+    console_init();
+
+    log_okay("UART PL011 serial console ready");
+    if (fb_is_ready())
+        log_okay("Framebuffer 640x480, 32 bpp (VideoCore mailbox)");
+    else
+        log_warn("Framebuffer not available - HDMI output disabled");
+    log_okay("Kernel shell ready to start");
+
+    console_puts("\n\rPress any key to continue...\n\r");
+    (void)uart_getc();
+
+    console_clear(0xFF202428u);
+
+    console_puts(header);
+    console_puts(pros_logo);
+    console_puts("\n\r");
+    console_puts(copyright);
+    console_puts(shell);
+    console_puts("\n\r");
 
     kshell_start();
 }

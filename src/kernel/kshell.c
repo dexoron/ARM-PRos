@@ -1,5 +1,7 @@
 #include <kshell.h>
+#include <drivers/console.h>
 #include <drivers/uart.h>
+#include <log.h>
 #include <string.h>
 
 #define CMD_MAX_LEN 256
@@ -8,39 +10,53 @@ void kshell_start(void) {
     char cmd_buffer[CMD_MAX_LEN];
     int cmd_len = 0;
 
-    uart_puts("\n\r[PRos] > ");
+    console_puts("\n\r[PRos] > ");
 
     while (1) {
         char c = uart_getc();
 
         if (c == '\r' || c == '\n') {
-            uart_puts("\n\r");
+            console_puts("\n\r");
             cmd_buffer[cmd_len] = '\0';
 
             if (cmd_len > 0) {
                 if (strcmp(cmd_buffer, "help") == 0) {
-                    uart_puts("Available commands:\n\r");
-                    uart_puts("  help  - Show this help message\n\r");
-                } else {
-                    uart_puts("Unknown command: ");
-                    uart_puts(cmd_buffer);
-                    uart_puts("\n\r");
+                    console_puts("Available commands:\n\r");
+                    console_puts("  help  - Show this help message\n\r");
+                    console_puts("  cls   - Clear screen\n\r");
+                }
+                else if (strcmp(cmd_buffer, "cls") == 0) {
+                    console_clear(0xFF202428u);
+                }
+                else {
+                    char msg[CMD_MAX_LEN + 32];
+                    unsigned mi = 0u;
+                    const char *pre = "Unknown command: ";
+
+                    while (*pre != '\0' && mi < sizeof(msg) - 1u)
+                        msg[mi++] = *pre++;
+                    unsigned pj = 0u;
+                    while (cmd_buffer[pj] != '\0' &&
+                           mi < sizeof(msg) - 1u)
+                        msg[mi++] = cmd_buffer[pj++];
+                    msg[mi] = '\0';
+                    log_error(msg);
                 }
             }
 
             cmd_len = 0;
-            uart_puts("[PRos] > ");
+            console_puts("[PRos] > ");
         } 
         else if (c == '\b' || c == 0x7F) {
             if (cmd_len > 0) {
                 cmd_len--;
-                uart_puts("\b \b");
+                console_puts("\b \b");
             }
         } 
         else if (c >= 32 && c <= 126) {
             if (cmd_len < CMD_MAX_LEN - 1) {
                 cmd_buffer[cmd_len++] = c;
-                uart_putc(c);
+                console_putc(c);
             }
         }
     }

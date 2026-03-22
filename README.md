@@ -12,6 +12,8 @@
 
 **A minimalistic 64-bit operating system written in C and Assembly for ARMv8-A architecture**
 
+<img src="docs/screenshots/terminal.png" width=75%>
+
 </div>
 
 ## Overview
@@ -21,18 +23,22 @@
 ## Roadmap
 
 - [x] UART Driver: Basic text output (puts, puthex, putc)
-- [ ] UART Input
+- [X] UART Input
+- [X] String Library (`strcmp`, `strlen`, `atoi`)
+- [X] Kernel Shell
+- [X] Framebuffer
 - [ ] Interrupt Controller (GIC)
 - [ ] Keyboard Driver
 - [ ] Timer Driver
-- [ ] String Library (`strcmp`, `strlen`, `atoi`)
-- [ ] Kernel Shell
 - [ ] Physical Memory Manager
 - [ ] PCI Scanning
+- [ ] FAT32 file system
+- [ ] *.ELF programs
+- [ ] Multitasking
 
 ## Building from Source
 
-Install `aarch64-linux-gnu-gcc` compiler using your package manager, then run build script:
+Install `aarch64-linux-gnu-gcc` (or `clang` if you wanna use `dcr`) compiler using your package manager, then run build script:
 
 ```bash
 chmod +x build-linux.sh
@@ -57,13 +63,11 @@ Or manually:
 
 ```bash
 qemu-system-aarch64 \
-    -M virt \
-    -cpu cortex-a53 \
-    -m 1024 \
-    -kernel build/KERNEL.ELF \
-    -display gtk \
-    -serial vc \
-    -monitor stdio
+    -M raspi3b \
+    -drive file="$SD_IMG",format=raw,if=sd,index=0 \
+    -kernel "$KERNEL_IMG" \
+    -serial stdio \
+    -display gtk
 ```
 
 Or use [dcr](https://dcr.dexoron.su)
