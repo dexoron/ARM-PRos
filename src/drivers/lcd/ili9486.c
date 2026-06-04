@@ -15,8 +15,8 @@ extern const uint8_t font4x6_basic[128][3];
 #define DC_PIN  24
 #define RST_PIN 25
 
-#define LCD_MADCTL 0x28
-#define SPI_CLOCK_DIVIDER 8
+#define LCD_MADCTL 0x20
+#define SPI_CLOCK_DIVIDER 16
 
 #define MARGIN 4
 
@@ -36,9 +36,9 @@ static inline void dc_data(void)    { *GPSET0 = (1u << DC_PIN); }
 
 static uint16_t rgb565_be(uint32_t rgb)
 {
-	unsigned r = rgb & 0xFFu;
+	unsigned r = (rgb >> 16) & 0xFFu;
 	unsigned g = (rgb >> 8) & 0xFFu;
-	unsigned b = (rgb >> 16) & 0xFFu;
+	unsigned b = rgb & 0xFFu;
 	uint16_t v = (uint16_t)(((r & 0xF8u) << 8) | ((g & 0xFCu) << 3) | (b >> 3));
 	return (uint16_t)((v >> 8) | (v << 8));
 }

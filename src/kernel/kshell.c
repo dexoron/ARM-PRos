@@ -5,7 +5,7 @@
 
 #include <kshell.h>
 #include <drivers/console.h>
-#include <drivers/uart.h>
+#include <drivers/input.h>
 #include <log.h>
 #include <string.h>
 #include <power.h>
@@ -20,7 +20,7 @@ void kshell_start(void)
 	console_puts("\n\r[PRos] > ");
 
 	while (1) {
-		char c = uart_getc();
+		int c = input_getc();
 
 		if (c == '\r' || c == '\n') {
 			console_puts("\n\r");
